@@ -43,7 +43,9 @@ Route::get('/', function () {
     return redirect('admin');
 });
 
-Auth::routes();
+Auth::routes([
+    'register' => false,
+]);
 
 Route::fallback(function () {
     return view('404');
