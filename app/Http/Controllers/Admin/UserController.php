@@ -116,7 +116,6 @@ class UserController extends Controller
         if ($user->save()) {
             if (!empty($request->role)) {
                 $user->syncRoles($request->role);
-                $user->type = $request->role;
                 $user->save();
             }
             return redirect()
