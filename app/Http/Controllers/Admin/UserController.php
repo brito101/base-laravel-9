@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\CheckPermission;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UserRequest;
 use App\Models\User;
@@ -23,9 +24,7 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        if (!Auth::user()->hasPermissionTo('Listar Usuários')) {
-            abort(403, 'Acesso não autorizado');
-        }
+        CheckPermission::checkAuth('Listar Usuários');
 
         if (Auth::user()->hasRole('Programador')) {
             $users = ViewsUser::all('id', 'name', 'email', 'type');
@@ -36,17 +35,20 @@ class UserController extends Controller
         }
 
         if ($request->ajax()) {
+
+            $token = csrf_token();
+
             return Datatables::of($users)
                 ->addIndexColumn()
-                ->addColumn('action', function ($row) {
-                    $btn = '<a class="btn btn-xs btn-primary mx-1 shadow" title="Editar" href="users/' . $row->id . '/edit"><i class="fa fa-lg fa-fw fa-pen"></i></a>' . '<a class="btn btn-xs btn-danger mx-1 shadow" title="Excluir" href="users/destroy/' . $row->id . '" onclick="return confirm(\'Confirma a exclusão deste usuário?\')"><i class="fa fa-lg fa-fw fa-trash"></i></a>';
+                ->addColumn('action', function ($row) use ($token) {
+                    $btn = '<a class="btn btn-xs btn-primary mx-1 shadow" title="Editar" href="users/' . $row->id . '/edit"><i class="fa fa-lg fa-fw fa-pen"></i></a>' . '<form method="POST" action="users/' . $row->id . '" class="btn btn-xs px-0"><input type="hidden" name="_method" value="DELETE"><input type="hidden" name="_token" value="' . $token . '"><button class="btn btn-xs btn-danger mx-1 shadow" title="Excluir" onclick="return confirm(\'Confirma a exclusão deste usuário?\')"><i class="fa fa-lg fa-fw fa-trash"></i></button></form>';
                     return $btn;
                 })
                 ->rawColumns(['action'])
                 ->make(true);
         }
 
-        return view('admin.users.index', compact('users'));
+        return view('admin.users.index');
     }
 
     /**
@@ -56,15 +58,12 @@ class UserController extends Controller
      */
     public function create()
     {
-        if (!Auth::user()->hasPermissionTo('Criar Usuários')) {
-            abort(403, 'Acesso não autorizado');
-        }
+        CheckPermission::checkAuth('Criar Usuários');
+
         if (Auth::user()->hasRole('Programador')) {
-            $roles = Role::all();
-        } elseif (Auth::user()->hasRole('Administrador')) {
-            $roles = Role::where('name', '!=', 'Programador')->get();
+            $roles = Role::all(['id', 'name']);
         } else {
-            $roles = [];
+            $roles = Role::where('name', '!=', 'Programador')->get(['id', 'name']);
         }
         return view('admin.users.create', compact('roles'));
     }
@@ -77,9 +76,7 @@ class UserController extends Controller
      */
     public function store(UserRequest $request)
     {
-        if (!Auth::user()->hasPermissionTo('Criar Usuários')) {
-            abort(403, 'Acesso não autorizado');
-        }
+        CheckPermission::checkAuth('Criar Usuários');
 
         $data = $request->all();
         $data['password'] = bcrypt($request->password);
@@ -137,32 +134,25 @@ class UserController extends Controller
      */
     public function edit($id = null)
     {
-        if ($id && !Auth::user()->hasPermissionTo('Editar Usuários')) {
-            abort(403, 'Acesso não autorizado');
-        }
+        CheckPermission::checkManyAuth(['sdasdas Glu', 'asdasdsad Gle']);
+        // if ($id) {
+        //     CheckPermission::checkAuth('Editar Usuários');
+        // } else {
+        //     CheckPermission::checkAuth('Editar Usuário');
+        //     $id = Auth::user()->id;
+        // }
 
-        if (is_null($id) && !Auth::user()->hasPermissionTo('Editar Usuário')) {
+        $user = User::find($id);
+        if (!$user) {
             abort(403, 'Acesso não autorizado');
-        }
-
-        if (is_null($id)) {
-            $id = Auth::user()->id;
         }
 
         if (Auth::user()->hasRole('Programador')) {
-            $roles = Role::all();
-            $user = User::where('id', $id)->first();
-        } elseif (Auth::user()->hasRole('Administrador')) {
-            $roles = Role::where('name', '!=', 'Programador')->get();
-            $user = User::where('id', $id)->first();
+            $roles = Role::all(['id', 'name']);
         } else {
-            $roles = [];
-            $user = User::where('id', $id)->first();
+            $roles = Role::where('name', '!=', 'Programador')->get(['id', 'name']);
         }
 
-        if (empty($user->id)) {
-            abort(403, 'Acesso não autorizado');
-        }
         return view('admin.users.edit', compact('user', 'roles'));
     }
 
@@ -175,22 +165,17 @@ class UserController extends Controller
      */
     public function update(UserRequest $request, $id)
     {
-        if (!Auth::user()->hasAnyPermission(['Editar Usuários', 'Editar Usuário'])) {
-            abort(403, 'Acesso não autorizado');
-        }
+        CheckPermission::checkManyAuth(['Editar Usuários', 'Editar Usuário']);
 
         $data = $request->all();
 
-        if (Auth::user()->hasPermissionTo('Editar Usuários')) {
-            $user = User::where('id', $id)->first();
+        if (!Auth::user()->hasPermissionTo('Editar Usuários') && Auth::user()->hasPermissionTo('Editar Usuário')) {
+            $user = User::where('id', Auth::user()->id)->first();
+        } else {
+            $user = User::find($id);
         }
 
-        if (empty($user->id) && Auth::user()->hasPermissionTo('Editar Usuário')) {
-            $id = Auth::user()->id;
-            $user = User::where('id', $id)->first();
-        }
-
-        if (empty($user->id)) {
+        if (!$user) {
             abort(403, 'Acesso não autorizado');
         }
 
@@ -262,13 +247,11 @@ class UserController extends Controller
      */
     public function destroy($id)
     {
-        if (!Auth::user()->hasPermissionTo('Excluir Usuários')) {
-            abort(403, 'Acesso não autorizado');
-        }
+        CheckPermission::checkAuth('Excluir Usuários');
 
-        $user = User::where('id', $id)->first();
+        $user = User::find($id);
 
-        if (empty($user->id)) {
+        if (!$user) {
             abort(403, 'Acesso não autorizado');
         }
 

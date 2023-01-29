@@ -15,7 +15,9 @@
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item"><a href="{{ route('admin.home') }}">Home</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('admin.users.index') }}">Usuários</a></li>
+                        @can('Listar Usuários')
+                            <li class="breadcrumb-item"><a href="{{ route('admin.users.index') }}">Usuários</a></li>
+                        @endcan
                         <li class="breadcrumb-item active">Novo Usuário</li>
                     </ol>
                 </div>
@@ -42,8 +44,8 @@
                                 <div class="d-flex flex-wrap justify-content-between">
                                     <div class="col-12 col-md-6 form-group px-0 pr-md-2">
                                         <label for="name">Nome</label>
-                                        <input type="text" class="form-control" id="name" placeholder="Nome Completo"
-                                            name="name" value="{{ old('name') }}" required>
+                                        <input type="text" class="form-control" id="name"
+                                            placeholder="Nome Completo" name="name" value="{{ old('name') }}" required>
                                     </div>
                                 </div>
 
@@ -55,8 +57,8 @@
                                     </div>
                                     <div class="col-12 col-md-6 form-group px-0 pl-md-2">
                                         <label for="cell">Celular</label>
-                                        <input type="tel" class="form-control" id="cell" placeholder="Celular" name="cell"
-                                            value="{{ old('cell') }}">
+                                        <input type="tel" class="form-control" id="cell" placeholder="Celular"
+                                            name="cell" value="{{ old('cell') }}">
                                     </div>
                                 </div>
 

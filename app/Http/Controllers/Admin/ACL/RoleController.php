@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\ACL;
 
+use App\Helpers\CheckPermission;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,24 +20,25 @@ class RoleController extends Controller
      */
     public function index(Request $request)
     {
-        if (!Auth::user()->hasPermissionTo('Listar Perfis')) {
-            abort(403, 'Acesso não autorizado');
-        }
-        $roles = Role::all();
+        CheckPermission::checkAuth('Listar Perfis');
+
+        $roles = Role::all(['id', 'name']);
 
         if ($request->ajax()) {
-            $data = $roles;
-            return Datatables::of($data)
+
+            $token = csrf_token();
+
+            return Datatables::of($roles)
                 ->addIndexColumn()
-                ->addColumn('action', function ($row) {
-                    $btn = '<a class="btn btn-xs btn-primary mx-1 shadow" title="Editar" href="role/' . $row->id . '/edit"><i class="fa fa-lg fa-fw fa-pen"></i></a>' . '<a class="btn btn-xs btn-secondary mx-1 shadow" title="Sincronizar" href="role/' . $row->id . '/permission"><i class="fa fa-lg fa-fw fa-sync"></i></a>' . '<a class="btn btn-xs btn-danger mx-1 shadow" title="Excluir" href="role/destroy/' . $row->id . '" onclick="return confirm(\'Confirma a exclusão deste perfil?\')"><i class="fa fa-lg fa-fw fa-trash"></i></a>';
+                ->addColumn('action', function ($row) use ($token) {
+                    $btn = '<a class="btn btn-xs btn-primary mx-1 shadow" title="Editar" href="role/' . $row->id . '/edit"><i class="fa fa-lg fa-fw fa-pen"></i></a>' . '<a class="btn btn-xs btn-secondary mx-1 shadow" title="Sincronizar" href="role/' . $row->id . '/permission"><i class="fa fa-lg fa-fw fa-sync"></i></a>' . '<form method="POST" action="role/' . $row->id . '" class="btn btn-xs px-0"><input type="hidden" name="_method" value="DELETE"><input type="hidden" name="_token" value="' . $token . '"><button class="btn btn-xs btn-danger mx-1 shadow" title="Excluir" onclick="return confirm(\'Confirma a exclusão deste perfil?\')"><i class="fa fa-lg fa-fw fa-trash"></i></button></form>';
                     return $btn;
                 })
                 ->rawColumns(['action'])
                 ->make(true);
         }
 
-        return view('admin.acl.roles.index', compact('roles'));
+        return view('admin.acl.roles.index');
     }
 
     /**
@@ -46,9 +48,8 @@ class RoleController extends Controller
      */
     public function create()
     {
-        if (!Auth::user()->hasPermissionTo('Criar Perfis')) {
-            abort(403, 'Acesso não autorizado');
-        }
+        CheckPermission::checkAuth('Criar Perfis');
+
         return view('admin.acl.roles.create');
     }
 
@@ -60,25 +61,25 @@ class RoleController extends Controller
      */
     public function store(Request $request)
     {
-        if (!Auth::user()->hasPermissionTo('Criar Perfis')) {
-            abort(403, 'Acesso não autorizado');
-        }
-        $check = Role::where('name', $request->name)->get();
-        if ($check->count() > 0) {
+        CheckPermission::checkAuth('Criar Perfis');
+
+        $check = Role::where('name', $request->name)->first();
+        if ($check) {
             return redirect()
                 ->back()
                 ->withInput()
                 ->with('error', 'Nome do perfil já está em uso!');
         }
-        $data = $request->all();
-        $role = Role::create($data);
+
+        $role = Role::create($request->all());
+
         if ($role->save()) {
             return redirect()
                 ->route('admin.role.index')
                 ->with('success', 'Perfil cadastrado!');
         } else {
             return redirect()
-                ->route('admin.role.index')
+                ->back()
                 ->withInput()
                 ->with('error', 'Falha ao cadastrar perfil!');
         }
@@ -92,13 +93,13 @@ class RoleController extends Controller
      */
     public function edit($id)
     {
-        if (!Auth::user()->hasPermissionTo('Editar Perfis')) {
+        CheckPermission::checkAuth('Editar Perfis');
+
+        $role = Role::find($id);
+        if (!$role) {
             abort(403, 'Acesso não autorizado');
         }
-        $role = Role::where('id', $id)->first();
-        if (empty($role->id)) {
-            abort(403, 'Acesso não autorizado');
-        }
+
         return view('admin.acl.roles.edit', compact('role'));
     }
 
@@ -111,25 +112,22 @@ class RoleController extends Controller
      */
     public function update(Request $request, $id)
     {
-        if (!Auth::user()->hasPermissionTo('Editar Perfis')) {
+        CheckPermission::checkAuth('Editar Perfis');
+
+        $role = Role::find($id);
+        if (!$role) {
             abort(403, 'Acesso não autorizado');
         }
 
-        $role = Role::where('id', $id)->first();
-        if (empty($role->id)) {
-            abort(403, 'Acesso não autorizado');
-        }
-
-        $check = Role::where('name', $request->name)->where('id', '!=', $id)->get();
-        if ($check->count() > 0) {
+        $check = Role::where('name', $request->name)->where('id', '!=', $id)->first();
+        if ($check) {
             return redirect()
                 ->back()
                 ->withInput()
                 ->with('error', 'O nome deste perfil já está em uso!');
         }
-        $data = $request->all();
 
-        if ($role->update($data)) {
+        if ($role->update($request->all())) {
             return redirect()
                 ->route('admin.role.index')
                 ->with('success', 'Atualização realizada!');
@@ -149,12 +147,10 @@ class RoleController extends Controller
      */
     public function destroy($id)
     {
-        if (!Auth::user()->hasPermissionTo('Excluir Perfis')) {
-            abort(403, 'Acesso não autorizado');
-        }
+        CheckPermission::checkAuth('Excluir Perfis');
 
-        $role = Role::where('id', $id)->first();
-        if (empty($role->id)) {
+        $role = Role::find($id);
+        if (!$role) {
             abort(403, 'Acesso não autorizado');
         }
 
@@ -169,15 +165,16 @@ class RoleController extends Controller
         }
     }
 
-    public function permissions($role)
+    public function permissions($id)
     {
-        if (!Auth::user()->hasPermissionTo('Sincronizar Perfis')) {
+        CheckPermission::checkAuth('Sincronizar Perfis');
+
+        $role = Role::find($id);
+
+        if (!$role) {
             abort(403, 'Acesso não autorizado');
         }
-        $role = Role::where('id', $role)->first();
-        if (empty($role->id)) {
-            abort(403, 'Acesso não autorizado');
-        }
+
         $permissions = Permission::all();
 
         foreach ($permissions as $permission) {
@@ -187,25 +184,32 @@ class RoleController extends Controller
                 $permission->can = false;
             }
         }
+
         return view('admin.acl.roles.permissions', compact('role', 'permissions'));
     }
 
 
-    public function permissionsSync(Request $request, $role)
+    public function permissionsSync(Request $request, $id)
     {
-        if (!Auth::user()->hasPermissionTo('Sincronizar Perfis')) {
-            abort(403, 'Acesso não autorizado');
-        }
+
+        CheckPermission::checkAuth('Sincronizar Perfis');
+
         $permissionsRequest = $request->except(['_token', '_method']);
         foreach ($permissionsRequest as $key => $value) {
             $permissions[] = Permission::where('id', $key)->first();
         }
-        $role = Role::where('id', $role)->first();
+
+        $role = Role::find($id);
+        if (!$role) {
+            abort(403, 'Acesso não autorizado');
+        }
+
         if (!empty($permissions)) {
             $role->syncPermissions($permissions);
         } else {
             $role->syncPermissions(null);
         }
+
         return redirect()
             ->route('admin.role.permissions', ['role' => $role->id])
             ->with('success', 'Permissão sincronizada');

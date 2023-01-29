@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\ACL;
 
+use App\Helpers\CheckPermission;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,24 +20,25 @@ class PermissionController extends Controller
      */
     public function index(Request $request)
     {
-        if (!Auth::user()->hasPermissionTo('Listar Permissões')) {
-            abort(403, 'Acesso não autorizado');
-        }
+        CheckPermission::checkAuth('Listar Permissões');
+
         $permissions = Permission::all();
 
         if ($request->ajax()) {
-            $data = $permissions;
-            return Datatables::of($data)
+
+            $token = csrf_token();
+
+            return Datatables::of($permissions)
                 ->addIndexColumn()
-                ->addColumn('action', function ($row) {
-                    $btn = '<a class="btn btn-xs btn-primary mx-1 shadow" title="Editar" href="permission/' . $row->id . '/edit"><i class="fa fa-lg fa-fw fa-pen"></i></a>' . '<a class="btn btn-xs btn-danger mx-1 shadow" title="Excluir" href="permission/destroy/' . $row->id . '" onclick="return confirm(\'Confirma a exclusão desta permissão?\')"><i class="fa fa-lg fa-fw fa-trash"></i></a>';
+                ->addColumn('action', function ($row) use ($token) {
+                    $btn = '<a class="btn btn-xs btn-primary mx-1 shadow" title="Editar" href="permission/' . $row->id . '/edit"><i class="fa fa-lg fa-fw fa-pen"></i></a>' . '<form method="POST" action="permission/' . $row->id . '" class="btn btn-xs px-0"><input type="hidden" name="_method" value="DELETE"><input type="hidden" name="_token" value="' . $token . '"><button class="btn btn-xs btn-danger mx-1 shadow" title="Excluir" onclick="return confirm(\'Confirma a exclusão desta permissão?\')"><i class="fa fa-lg fa-fw fa-trash"></i></button></form>';
                     return $btn;
                 })
                 ->rawColumns(['action'])
                 ->make(true);
         }
 
-        return view('admin.acl.permissions.index', compact('permissions'));
+        return view('admin.acl.permissions.index');
     }
 
     /**
@@ -46,9 +48,8 @@ class PermissionController extends Controller
      */
     public function create()
     {
-        if (!Auth::user()->hasPermissionTo('Criar Permissões')) {
-            abort(403, 'Acesso não autorizado');
-        }
+        CheckPermission::checkAuth('Criar Permissões');
+
         return view('admin.acl.permissions.create');
     }
 
@@ -60,25 +61,25 @@ class PermissionController extends Controller
      */
     public function store(Request $request)
     {
-        if (!Auth::user()->hasPermissionTo('Criar Permissões')) {
-            abort(403, 'Acesso não autorizado');
-        }
-        $check = Permission::where('name', $request->name)->get();
-        if ($check->count() > 0) {
+        CheckPermission::checkAuth('Criar Permissões');
+
+        $check = Permission::where('name', $request->name)->first();
+        if ($check) {
             return redirect()
                 ->back()
                 ->withInput()
                 ->with('error', 'Nome da permissão já está em uso!');
         }
-        $data = $request->all();
-        $permission = Permission::create($data);
+
+        $permission = Permission::create($request->all());
+
         if ($permission->save()) {
             return redirect()
                 ->route('admin.permission.index')
                 ->with('success', 'Permissão cadastrada!');
         } else {
             return redirect()
-                ->route('admin.permission.index')
+                ->back()
                 ->withInput()
                 ->with('error', 'Falha ao cadastrar a permissão!');
         }
@@ -92,13 +93,13 @@ class PermissionController extends Controller
      */
     public function edit($id)
     {
-        if (!Auth::user()->hasPermissionTo('Editar Permissões')) {
+        CheckPermission::checkAuth('Editar Permissões');
+
+        $permission = Permission::find($id);
+        if (!$permission) {
             abort(403, 'Acesso não autorizado');
         }
-        $permission = Permission::where('id', $id)->first();
-        if (empty($permission->id)) {
-            abort(403, 'Acesso não autorizado');
-        }
+
         return view('admin.acl.permissions.edit', compact('permission'));
     }
 
@@ -111,19 +112,22 @@ class PermissionController extends Controller
      */
     public function update(Request $request, $id)
     {
-        if (!Auth::user()->hasPermissionTo('Editar Permissões')) {
-            abort(403, 'Acesso não autorizado');
-        }
-        $check = Permission::where('name', $request->name)->where('id', '!=', $id)->get();
-        if ($check->count() > 0) {
+        CheckPermission::checkAuth('Editar Permissões');
+
+        $check = Permission::where('name', $request->name)->where('id', '!=', $id)->first();
+        if ($check) {
             return redirect()
                 ->back()
                 ->withInput()
                 ->with('error', 'O nome desta permissão já está em uso!');
         }
-        $data = $request->all();
-        $permission = Permission::where('id', $id)->first();
-        if ($permission->update($data)) {
+
+        $permission = Permission::find($id);
+        if (!$permission) {
+            abort(403, 'Acesso não autorizado');
+        }
+
+        if ($permission->update($request->all())) {
             return redirect()
                 ->route('admin.permission.index')
                 ->with('success', 'Atualização realizada!');
@@ -143,12 +147,10 @@ class PermissionController extends Controller
      */
     public function destroy($id)
     {
-        if (!Auth::user()->hasPermissionTo('Excluir Permissões')) {
-            abort(403, 'Acesso não autorizado');
-        }
+        CheckPermission::checkAuth('Excluir Permissões');
 
-        $permission = Permission::where('id', $id)->first();
-        if (empty($permission->id)) {
+        $permission = Permission::find($id);
+        if (!$permission) {
             abort(403, 'Acesso não autorizado');
         }
 
