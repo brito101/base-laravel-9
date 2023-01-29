@@ -29,10 +29,10 @@ class CheckPermission
         } else {
             if (is_array($name)) {
                 foreach ($name as $item) {
-                    $permission = Permission::create(['name' => $item]);
+                    Permission::create(['name' => $item]);
                 }
             } else {
-                $permission = Permission::create(['name' => $name]);
+                Permission::create(['name' => $name]);
             }
             return true;
         }
