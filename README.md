@@ -7,7 +7,7 @@
 <h5>Usage</h5>
 <p><code>cp .env.example .env</code></p>
 <p>Edit .env parameters</p>
-
+<p><code>alias sail='[ -f sail ] && sh sail || sh vendor/bin/sail'</code></p>
 <p><code>sail up</code></p>
 <p><code>sail composer install</code></p>
 <p><code>sail artisan key:generate</code></p>
