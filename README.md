@@ -8,12 +8,13 @@
 <p><code>cp .env.example .env</code></p>
 <p>Edit .env parameters</p>
 <p><code>alias sail='[ -f sail ] && sh sail || sh vendor/bin/sail'</code></p>
-<p><code>sail up</code></p>
+<p><code>sail up -d</code></p>
 <p><code>sail composer install</code></p>
 <p><code>sail artisan key:generate</code></p>
 <p><code>sail artisan storage:link</code></p>
 <p><code>sail artisan migrate --seed</code></p>
 <p><code>npm install && npm run dev</code></p>
+<p><code>sail stop</code></p>
 
 <ul>Programmer login: 
     <li>user: programador@base.com</li>
