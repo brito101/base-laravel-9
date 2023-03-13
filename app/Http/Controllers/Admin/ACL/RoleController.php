@@ -4,12 +4,10 @@ namespace App\Http\Controllers\Admin\ACL;
 
 use App\Helpers\CheckPermission;
 use App\Http\Controllers\Controller;
+use DataTables;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\UnauthorizedException;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
-use DataTables;
 
 class RoleController extends Controller
 {
@@ -25,13 +23,13 @@ class RoleController extends Controller
         $roles = Role::all(['id', 'name']);
 
         if ($request->ajax()) {
-
             $token = csrf_token();
 
             return Datatables::of($roles)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) use ($token) {
                     $btn = '<a class="btn btn-xs btn-primary mx-1 shadow" title="Editar" href="role/' . $row->id . '/edit"><i class="fa fa-lg fa-fw fa-pen"></i></a>' . '<a class="btn btn-xs btn-secondary mx-1 shadow" title="Sincronizar" href="role/' . $row->id . '/permission"><i class="fa fa-lg fa-fw fa-sync"></i></a>' . '<form method="POST" action="role/' . $row->id . '" class="btn btn-xs px-0"><input type="hidden" name="_method" value="DELETE"><input type="hidden" name="_token" value="' . $token . '"><button class="btn btn-xs btn-danger mx-1 shadow" title="Excluir" onclick="return confirm(\'Confirma a exclusão deste perfil?\')"><i class="fa fa-lg fa-fw fa-trash"></i></button></form>';
+
                     return $btn;
                 })
                 ->rawColumns(['action'])
@@ -56,7 +54,6 @@ class RoleController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
@@ -96,7 +93,7 @@ class RoleController extends Controller
         CheckPermission::checkAuth('Editar Perfis');
 
         $role = Role::find($id);
-        if (!$role) {
+        if (! $role) {
             abort(403, 'Acesso não autorizado');
         }
 
@@ -106,7 +103,6 @@ class RoleController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
@@ -115,7 +111,7 @@ class RoleController extends Controller
         CheckPermission::checkAuth('Editar Perfis');
 
         $role = Role::find($id);
-        if (!$role) {
+        if (! $role) {
             abort(403, 'Acesso não autorizado');
         }
 
@@ -150,7 +146,7 @@ class RoleController extends Controller
         CheckPermission::checkAuth('Excluir Perfis');
 
         $role = Role::find($id);
-        if (!$role) {
+        if (! $role) {
             abort(403, 'Acesso não autorizado');
         }
 
@@ -171,7 +167,7 @@ class RoleController extends Controller
 
         $role = Role::find($id);
 
-        if (!$role) {
+        if (! $role) {
             abort(403, 'Acesso não autorizado');
         }
 
@@ -188,10 +184,8 @@ class RoleController extends Controller
         return view('admin.acl.roles.permissions', compact('role', 'permissions'));
     }
 
-
     public function permissionsSync(Request $request, $id)
     {
-
         CheckPermission::checkAuth('Sincronizar Perfis');
 
         $permissionsRequest = $request->except(['_token', '_method']);
@@ -200,11 +194,11 @@ class RoleController extends Controller
         }
 
         $role = Role::find($id);
-        if (!$role) {
+        if (! $role) {
             abort(403, 'Acesso não autorizado');
         }
 
-        if (!empty($permissions)) {
+        if (! empty($permissions)) {
             $role->syncPermissions($permissions);
         } else {
             $role->syncPermissions(null);

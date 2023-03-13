@@ -1,27 +1,22 @@
 <?php
 
-use App\Http\Controllers\Admin\{
-    AdminController,
-    ACL\PermissionController,
-    ACL\RoleController,
-    UserController
-};
-use Illuminate\Support\Facades\{
-    Auth,
-    Route
-};
+use App\Http\Controllers\Admin\ACL\PermissionController;
+use App\Http\Controllers\Admin\ACL\RoleController;
+use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\UserController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 Route::group(['middleware' => ['auth']], function () {
-
     Route::prefix('admin')->name('admin.')->group(function () {
         /** Dash */
         Route::get('/', [AdminController::class, 'index'])->name('home');
 
         /** Chart home */
-        Route::get('/chart', [AdminController::class, 'chart'])->name('home.chart');
+        Route::get('chart', [AdminController::class, 'chart'])->name('home.chart');
 
         /** Users */
-        Route::get('/user/edit', [UserController::class, 'edit'])->name('user.edit');
+        Route::get('user/edit', [UserController::class, 'edit'])->name('user.edit');
         Route::resource('users', UserController::class);
 
         /**

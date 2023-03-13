@@ -4,15 +4,12 @@ namespace App\Http\Controllers\Admin\ACL;
 
 use App\Helpers\CheckPermission;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\UnauthorizedException;
-use Spatie\Permission\Models\Permission;
 use DataTables;
+use Illuminate\Http\Request;
+use Spatie\Permission\Models\Permission;
 
 class PermissionController extends Controller
 {
-
     /**
      * Display a listing of the resource.
      *
@@ -25,13 +22,13 @@ class PermissionController extends Controller
         $permissions = Permission::all();
 
         if ($request->ajax()) {
-
             $token = csrf_token();
 
             return Datatables::of($permissions)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) use ($token) {
                     $btn = '<a class="btn btn-xs btn-primary mx-1 shadow" title="Editar" href="permission/' . $row->id . '/edit"><i class="fa fa-lg fa-fw fa-pen"></i></a>' . '<form method="POST" action="permission/' . $row->id . '" class="btn btn-xs px-0"><input type="hidden" name="_method" value="DELETE"><input type="hidden" name="_token" value="' . $token . '"><button class="btn btn-xs btn-danger mx-1 shadow" title="Excluir" onclick="return confirm(\'Confirma a exclusão desta permissão?\')"><i class="fa fa-lg fa-fw fa-trash"></i></button></form>';
+
                     return $btn;
                 })
                 ->rawColumns(['action'])
@@ -56,7 +53,6 @@ class PermissionController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
@@ -96,7 +92,7 @@ class PermissionController extends Controller
         CheckPermission::checkAuth('Editar Permissões');
 
         $permission = Permission::find($id);
-        if (!$permission) {
+        if (! $permission) {
             abort(403, 'Acesso não autorizado');
         }
 
@@ -106,7 +102,6 @@ class PermissionController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
@@ -123,7 +118,7 @@ class PermissionController extends Controller
         }
 
         $permission = Permission::find($id);
-        if (!$permission) {
+        if (! $permission) {
             abort(403, 'Acesso não autorizado');
         }
 
@@ -150,7 +145,7 @@ class PermissionController extends Controller
         CheckPermission::checkAuth('Excluir Permissões');
 
         $permission = Permission::find($id);
-        if (!$permission) {
+        if (! $permission) {
             abort(403, 'Acesso não autorizado');
         }
 

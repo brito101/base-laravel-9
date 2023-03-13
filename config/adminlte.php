@@ -228,7 +228,7 @@ return [
 
     'menu' => [
         [
-            'type'         => 'fullscreen-widget',
+            'type' => 'fullscreen-widget',
             'topnav_right' => true,
         ],
 
@@ -239,67 +239,67 @@ return [
         ],
         //Custom menus
         [
-            'text'        => 'Dashboard',
-            'url'         => '/admin',
-            'icon'        => 'fa fa-fw fa-digital-tachograph',
+            'text' => 'Dashboard',
+            'url' => '/admin',
+            'icon' => 'fa fa-fw fa-digital-tachograph',
         ],
         [
-            'text'        => 'Usuários',
-            'url'         => '#',
-            'icon'        => 'fas fa-fw fa-users',
-            'can'         => 'Acessar Usuários',
+            'text' => 'Usuários',
+            'url' => '#',
+            'icon' => 'fas fa-fw fa-users',
+            'can' => 'Acessar Usuários',
             'submenu' => [
                 [
                     'text' => 'Listagem de Usuários',
-                    'url'  => 'admin/users',
+                    'url' => 'admin/users',
                     'icon' => 'fas fa-fw fa-chevron-right',
-                    'can'  => 'Listar Usuários',
+                    'can' => 'Listar Usuários',
                 ],
                 [
                     'text' => 'Cadastro de Usuários',
-                    'url'  => 'admin/users/create',
+                    'url' => 'admin/users/create',
                     'icon' => 'fas fa-fw fa-chevron-right',
-                    'can'  => 'Criar Usuários',
+                    'can' => 'Criar Usuários',
                 ],
             ],
         ],
         [
-            'text'    => 'ACL',
-            'icon'    => 'fas fa-fw fa-user-shield',
-            'can'     => 'Acessar ACL',
+            'text' => 'ACL',
+            'icon' => 'fas fa-fw fa-user-shield',
+            'can' => 'Acessar ACL',
             'submenu' => [
 
                 [
                     'text' => 'Listagem de Perfis',
-                    'url'  => 'admin/role',
-                    'icon'    => 'fas fa-fw fa-chevron-right',
-                    'can'     => 'Listar Perfis',
+                    'url' => 'admin/role',
+                    'icon' => 'fas fa-fw fa-chevron-right',
+                    'can' => 'Listar Perfis',
                 ],
                 [
                     'text' => 'Cadastro de Perfis',
-                    'url'  => 'admin/role/create',
-                    'icon'    => 'fas fa-fw fa-chevron-right',
-                    'can'     => 'Criar Perfis',
+                    'url' => 'admin/role/create',
+                    'icon' => 'fas fa-fw fa-chevron-right',
+                    'can' => 'Criar Perfis',
                 ],
                 [
                     'text' => 'Listagem de Permissões',
-                    'url'  => 'admin/permission',
-                    'icon'    => 'fas fa-fw fa-chevron-right',
+                    'url' => 'admin/permission',
+                    'icon' => 'fas fa-fw fa-chevron-right',
                 ],
                 [
                     'text' => 'Cadastro de Permissões',
-                    'url'  => 'admin/permission/create',
-                    'icon'    => 'fas fa-fw fa-chevron-right',
-                    'can'     => 'Criar Permissões',
+                    'url' => 'admin/permission/create',
+                    'icon' => 'fas fa-fw fa-chevron-right',
+                    'can' => 'Criar Permissões',
                 ],
-            ]
+            ],
         ],
         [
-            'text'        => 'Site',
-            'url'    => '/',
-            'icon'    => 'fas fa-fw fa-link',
+            'text' => 'Site',
+            'url' => '/',
+            'icon' => 'fas fa-fw fa-link',
             'target' => '_blank',
-        ]
+        ],
     ],
 
     /*

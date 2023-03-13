@@ -16,6 +16,8 @@
 <p><code>npm install && npm run dev</code></p>
 <p><code>sail stop</code></p>
 
+<p><code>docker-compose exec laravel.test bash</code></p>
+
 <ul>Programmer login: 
     <li>user: programador@base.com</li>
     <li>pass: 12345678</li>

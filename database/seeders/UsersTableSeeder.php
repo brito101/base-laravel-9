@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use DateTime;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -18,16 +17,16 @@ class UsersTableSeeder extends Seeder
     {
         DB::table('users')->insert([
             [
-                'name'      => 'Programador',
-                'email'     => env('PROGRAMMER_EMAIL'),
-                'password'  => bcrypt(env('PROGRAMMER_PASSWD')),
-                'created_at' => new DateTime('now')
+                'name' => 'Programador',
+                'email' => env('PROGRAMMER_EMAIL'),
+                'password' => bcrypt(env('PROGRAMMER_PASSWD')),
+                'created_at' => new DateTime('now'),
             ],
             [
-                'name'      => 'Administrator',
-                'email'     => env('ADMIN_EMAIL'),
-                'password'  => bcrypt(env('ADMIN_PASSWD')),
-                'created_at' => new DateTime('now')
+                'name' => 'Administrator',
+                'email' => env('ADMIN_EMAIL'),
+                'password' => bcrypt(env('ADMIN_PASSWD')),
+                'created_at' => new DateTime('now'),
             ],
         ]);
     }

@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Views\User as ViewsUser;
 use App\Models\Views\Visit;
-use Illuminate\Http\Request;
+use stdClass;
 
 class AdminController extends Controller
 {
@@ -43,7 +43,7 @@ class AdminController extends Controller
             'onlineUsers' => $onlineUsers,
             'access' => $access,
             'percent' => $percent,
-            'chart' => $chart
+            'chart' => $chart,
         ]);
     }
 
@@ -51,11 +51,11 @@ class AdminController extends Controller
     {
         $onlineUsers = User::online()->count();
 
-        $access = Visit::where('created_at', '>=', date("Y-m-d"))
+        $access = Visit::where('created_at', '>=', date('Y-m-d'))
             ->where('url', '!=', route('admin.home.chart'))
             ->get();
-        $accessYesterday = Visit::where('created_at', '>=', date("Y-m-d", strtotime('-1 day')))
-            ->where('created_at', '<', date("Y-m-d"))
+        $accessYesterday = Visit::where('created_at', '>=', date('Y-m-d', strtotime('-1 day')))
+            ->where('created_at', '<', date('Y-m-d'))
             ->where('url', '!=', route('admin.home.chart'))
             ->count();
 
@@ -63,7 +63,7 @@ class AdminController extends Controller
 
         $percent = 0;
         if ($accessYesterday > 0) {
-            $percent = number_format((($totalDaily - $accessYesterday) / $totalDaily * 100), 2, ",", ".");
+            $percent = number_format((($totalDaily - $accessYesterday) / $totalDaily * 100), 2, ',', '.');
         }
 
         /** Visitor Chart */
@@ -76,15 +76,15 @@ class AdminController extends Controller
             $dataList[$key . 'H'] = count($value);
         }
 
-        $chart = new \stdClass();
+        $chart = new stdClass;
         $chart->labels = (array_keys($dataList));
         $chart->dataset = (array_values($dataList));
 
-        return array(
+        return [
             'onlineUsers' => $onlineUsers,
             'access' => $totalDaily,
             'percent' => $percent,
-            'chart' => $chart
-        );
+            'chart' => $chart,
+        ];
     }
 }
